@@ -1,0 +1,6 @@
+[gwrite]
+default_profile = "fabian"
+
+
+[gwrite.fabian]
+python_config = "gwrite_fabian.py"

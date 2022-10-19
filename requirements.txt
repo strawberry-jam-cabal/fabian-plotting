@@ -1,0 +1,7 @@
+vpype[all]
+vpype @ git+https://github.com/abey79/vpype
+-e git+ssh://git@github.com/tyehle/vpype-explorations.git@5a8366c82f9a3db6d0be00508dccc6d40e78d592#egg=vpype_explorations
+-e git+ssh://git@github.com/tyehle/vpype-gcode.git@aee6caf75a808ed0efb13608c94b6f45dd218ef7#egg=vpype_gcode
+vpype-occult
+vsketch @ git+https://github.com/abey79/vsketch
+
