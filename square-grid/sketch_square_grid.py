@@ -39,6 +39,7 @@ class SquareGridSketch(vsketch.SketchClass):
     forward_prob = Param(0.95)
     branch_prob = Param(0.4)
     layer_prob = Param(0.5)
+    fill_prob = Param(0.15)
     gap = Param(0.04)
     min_scale = Param(1/16)
 
@@ -83,7 +84,7 @@ class SquareGridSketch(vsketch.SketchClass):
             result.append(this)
             if debug:
                 old_stroke = vsk._cur_stroke
-                vsk.stroke(2)
+                vsk.stroke(3)
                 vsk.line(prev.real, prev.imag, x.real, x.imag)
                 vsk.circle(x.real, x.imag, .05)
                 vsk.line(x.real, x.imag, (x+v).real, (x+v).imag)
@@ -98,11 +99,16 @@ class SquareGridSketch(vsketch.SketchClass):
                     todo.append((x, v*branch, scale, fuel-1))
 
         for p in result:
-            stroke = max(1, round(self.scale * p.boundary.length / math.sqrt(2)))
-            # do manual stroke weight to make sure we are only on the inside of the shape
-            offset = self.pen_width/10/2
-            for i in range(stroke):
-                vsk.geometry(p.buffer(-self.gap-(i*offset)))
+            if random.random() < self.fill_prob:
+                vsk.fill(2)
+                vsk.geometry(p.buffer(-self.gap))
+                vsk.noFill()
+            else:
+                stroke = max(1, round(self.scale * p.boundary.length / math.sqrt(2)))
+                # do manual stroke weight to make sure we are only on the inside of the shape
+                offset = self.pen_width/10/2
+                for i in range(stroke):
+                    vsk.geometry(p.buffer(-self.gap-(i*offset)))
 
 
     def draw(self, vsk: Vsketch) -> None:
@@ -117,7 +123,7 @@ class SquareGridSketch(vsketch.SketchClass):
         vsk.vpype(f"{layout} {pen}")
 
     def finalize(self, vsk: Vsketch) -> None:
-        vsk.vpype("linemerge linesimplify reloop linesort")
+        vsk.vpype("reloop linesort --two-opt")
 
 
 if __name__ == "__main__":
