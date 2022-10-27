@@ -99,10 +99,10 @@ class SquareGridSketch(vsketch.SketchClass):
 
         for p in result:
             stroke = max(1, round(self.scale * p.boundary.length / math.sqrt(2)))
-            vsk.strokeWeight(stroke)
-            # try to only draw extra stroke width on the inside
-            gap = self.gap + (stroke-1)/2*(self.pen_width/2/10)
-            vsk.geometry(p.buffer(-gap))
+            # do manual stroke weight to make sure we are only on the inside of the shape
+            offset = self.pen_width/10/2
+            for i in range(stroke):
+                vsk.geometry(p.buffer(-self.gap-(i*offset)))
 
 
     def draw(self, vsk: Vsketch) -> None:
