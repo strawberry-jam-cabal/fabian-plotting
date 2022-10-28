@@ -14,7 +14,7 @@ z_travel = 500
 z_cut = 210
 
 
-tool_change_layers = {2,3} # which layers need a tool change
+tool_change_layers = [] # which layers need a tool change
 
 
 document_start = f""";Generated with vpype gwrite fabian
