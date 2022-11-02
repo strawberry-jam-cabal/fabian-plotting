@@ -10,6 +10,7 @@ fmt = "0>8.4f"
 # rates / mm/min
 xy_travel = 2100
 xy_cut = 720
+# xy_cut = 360
 z_travel = 500
 z_cut = 210
 
