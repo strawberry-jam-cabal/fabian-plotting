@@ -10,6 +10,7 @@ import shapely.geometry as g
 
 T = TypeVar("T")
 
+
 def polygon_vertices(start: complex, sides: int) -> list[complex]:
     """Vertices of a polygon centered at (0, 0).
 
@@ -20,7 +21,7 @@ def polygon_vertices(start: complex, sides: int) -> list[complex]:
     Returns:
         list[complex]: The list of all the vertices
     """
-    angle = 2*math.pi / sides
+    angle = 2 * math.pi / sides
     r = complex(math.cos(angle), math.sin(angle))
     return [start * r**i for i in range(sides)]
 
@@ -44,7 +45,7 @@ def arc(start: float, stop: float, resolution: float = 16) -> g.LineString:
     # res is number of points in a quarter circle
     while stop < start:
         stop += math.pi * 2
-    num = round((stop - start) * 2/math.pi * resolution)
+    num = round((stop - start) * 2 / math.pi * resolution)
     angles = np.linspace(start, stop, num)
     x = np.cos(angles)
     y = np.sin(angles)
@@ -62,15 +63,35 @@ def shuffle(xs: Iterable[T]) -> list[T]:
     return res
 
 
+def concentric_fill(
+    poly: g.Polygon | g.MultiPolygon, step: float
+) -> list[g.LinearRing]:
+    """Fills in a polygon by recursively adding buffers to the result line collection."""
+    if poly.geom_type == "MultiPolygon":
+        return [ring for part in poly.geoms for ring in concentric_fill(part, step)]
+    elif poly.geom_type == "Polygon":
+        if poly.is_valid and len(poly.exterior.coords) > 1:
+            return (
+                [poly.exterior]
+                + list(poly.interiors)
+                + concentric_fill(poly.buffer(-step), step)
+            )
+    else:
+        raise RuntimeError(f"Unsupported geometry: {poly.geom_type}")
+
+
 @dataclasses.dataclass
 class LineTree:
     line: g.LineString
     children: list[Tuple["LineTree", float]]
 
 
-class NoiseField():
+class NoiseField:
     """A 2D noise field generated from two independent Perlin noise samples."""
-    def __init__(self, frequency: complex, offset: complex, center: complex, attraction: complex) -> None:
+
+    def __init__(
+        self, frequency: complex, offset: complex, center: complex, attraction: complex
+    ) -> None:
         self.x_field = pnoise.Noise()
         self.y_field = pnoise.Noise()
         self.frequency = frequency
@@ -78,7 +99,9 @@ class NoiseField():
         self.center = center
         self.attraction = attraction
 
-    def get_values(self, xs: np.ndarray, ys: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    def get_values(
+        self, xs: np.ndarray, ys: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray]:
         zeros = np.zeros_like(xs)
         scaled_xs = (xs - self.offset.real) * self.frequency.real
         scaled_ys = (ys - self.offset.imag) * self.frequency.imag
@@ -104,7 +127,7 @@ class NoiseField():
     ) -> list[g.LineString]:
         assert len(x_starts) == len(y_starts)
 
-        hash_point = lambda p: (int(p.real/clearance), int(p.imag/clearance))
+        hash_point = lambda p: (int(p.real / clearance), int(p.imag / clearance))
 
         @dataclasses.dataclass
         class Line:
@@ -120,7 +143,9 @@ class NoiseField():
             xs = np.array([lines[i].points[-1].real for i in indices])
             ys = np.array([lines[i].points[-1].imag for i in indices])
             vxs, vys = self.get_values(xs, ys)
-            step_sizes = np.array([self.understep(step_size, max_understep) for _ in range(len(xs))])
+            step_sizes = np.array(
+                [self.understep(step_size, max_understep) for _ in range(len(xs))]
+            )
             vxs = np.multiply(vxs, step_sizes)
             vys = np.multiply(vys, step_sizes)
             xs = xs + vxs
