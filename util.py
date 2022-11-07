@@ -7,6 +7,7 @@ from typing import Iterable, Tuple, TypeVar
 import numpy as np
 import pnoise
 import shapely.geometry as g
+import shapely.validation as sv
 
 T = TypeVar("T")
 
@@ -67,15 +68,21 @@ def concentric_fill(
     poly: g.Polygon | g.MultiPolygon, step: float
 ) -> list[g.LinearRing]:
     """Fills in a polygon by recursively adding buffers to the result line collection."""
+    if not poly.is_valid:
+        valid = sv.make_valid(poly)
+        return concentric_fill(valid, step)
+
     if poly.geom_type == "MultiPolygon":
         return [ring for part in poly.geoms for ring in concentric_fill(part, step)]
     elif poly.geom_type == "Polygon":
-        if poly.is_valid and len(poly.exterior.coords) > 1:
+        if len(poly.exterior.coords) > 1:
             return (
                 [poly.exterior]
                 + list(poly.interiors)
                 + concentric_fill(poly.buffer(-step), step)
             )
+        else:
+            return []
     else:
         raise RuntimeError(f"Unsupported geometry: {poly.geom_type}")
 
