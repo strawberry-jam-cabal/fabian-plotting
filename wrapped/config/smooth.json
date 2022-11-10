@@ -1,0 +1,15 @@
+{
+    "__seed__": 2053277410,
+    "page_size": "6inx9in",
+    "offset": 0.0,
+    "pen_width": 0.25,
+    "scale": 1.0,
+    "width": 14.0,
+    "height": 22.0,
+    "density": 20.0,
+    "fuel": 2.0,
+    "min_length": 0.0,
+    "frequency": 0.15,
+    "detail": 0.25,
+    "max_understep": 0.5
+}
