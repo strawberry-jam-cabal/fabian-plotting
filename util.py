@@ -186,3 +186,22 @@ class NoiseField:
                 if ls.length >= min_length:
                     result.append(ls)
         return result
+
+    def distort(self, shape: g.LineString, step_size: float, steps: int) -> g.MultiLineString:
+        if shape.geom_type == "MultiLineString":
+            return g.MultiLineString([self.distort(line, step_size, steps) for line in shape.geoms])
+
+        if shape.geom_type != "LineString":
+            raise RuntimeError(f"Unsupported geometry type: {shape.geom_type}")
+
+        shape.coords
+        xs = np.array([x for x, _ in shape.coords])
+        ys = np.array([y for _, y in shape.coords])
+        for _ in range(steps):
+            (vxs, vys) = self.get_values(xs, ys)
+            vxs *= step_size
+            vys *= step_size
+            xs = xs + vxs
+            ys = ys + vys
+
+        return g.LineString(zip(xs, ys))
