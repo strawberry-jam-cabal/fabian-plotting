@@ -9,8 +9,9 @@ import shapely.geometry as g
 import shapely.ops as so
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent))
-import util
+import noise_field
 import stroke
+import util
 
 
 class StrokedFlowSketch(vsketch.SketchClass):
@@ -39,12 +40,12 @@ class StrokedFlowSketch(vsketch.SketchClass):
 
         crop = g.box(0, 0, self.width, self.height)
 
-        lines = util.NoiseField(
-            complex(self.frequency, self.frequency),
-            0+0j,
-            complex(self.width/2, self.width/2),
+        lines = noise_field.WrappedNoiseField(
+            frequency=complex(self.frequency, self.frequency),
+            offset=0+0j,
+            # complex(self.width/2, self.width/2),
             # .1+.1j,
-            0j,
+            # 0j,
         ).paths_in_polygon(
             a.scale(crop, 1.2, 1.2), self.density, self.fuel, self.detail, self.max_understep, self.pen_width_mm/10/2, self.min_length
         )

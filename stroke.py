@@ -53,7 +53,7 @@ def capped_stroke_width(
     length: float,
 ) -> Callable[[float], float]:
     def width(d: float) -> float:
-        if d < lead_in:
+        if d < lead_in and d <= length / 2:
             return cap_width(d / lead_in)
         elif d > length - lead_in:
             return cap_width((length - d) / lead_in)
@@ -63,6 +63,17 @@ def capped_stroke_width(
 
 
 def apply_style(line: g.LineString, width: Callable[[float], float]) -> g.Polygon:
+    """Apply a stroke to a line.
+
+    See the various *_stroke_width functions for convenient width values.
+
+    Args:
+        line (g.LineString): The line to stroke
+        width (Callable[[float], float]): The width of the stroke along the normalized length of the line.
+
+    Returns:
+        g.Polygon: The stroked line shape
+    """
     points = [complex(x, y) for x, y in line.coords]
     assert len(points) > 1
 

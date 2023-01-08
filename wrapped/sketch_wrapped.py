@@ -1,5 +1,4 @@
 import random
-from typing import Tuple
 
 import numpy as np
 import shapely.affinity as a
@@ -8,64 +7,7 @@ import shapely.ops as so
 import vsketch
 from vsketch import Param, Vsketch
 
-import util
-
-
-class WrappedNoiseField(util.NoiseField):
-    def __init__(
-        self,
-        frequency: complex,
-        offset: complex,
-        x_wrap: Tuple[float, float] | None = None,
-        y_wrap: Tuple[float, float] | None = None,
-    ) -> None:
-        super().__init__(frequency, offset, 0+0j, 0+0j)
-        self.x_wrap = x_wrap
-        self.y_wrap = y_wrap
-
-    def get_values(self, xs: np.ndarray, ys: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-        # move xs and ys to the right spot if we are wrapping them
-        if self.x_wrap is not None:
-            (x_min, x_max) = self.x_wrap
-            x_span = x_max - x_min
-            xs = np.mod(xs - x_min, x_span) + x_min
-        if self.y_wrap is not None:
-            (y_min, y_max) = self.y_wrap
-            y_span = y_max - y_min
-            ys = np.mod(ys - y_min, y_max - y_min) + y_min
-
-        def mix(
-            pos, neg, loc: np.ndarray, offset: float, span: float
-        ) -> Tuple[np.ndarray, np.ndarray]:
-            span_ratio = (loc - offset) / span
-            (x_pos, y_pos) = pos
-            (x_neg, y_neg) = neg
-            return (
-                np.multiply(1 - span_ratio, x_pos) + np.multiply(span_ratio, x_neg),
-                np.multiply(1 - span_ratio, y_pos) + np.multiply(span_ratio, y_neg),
-            )
-
-        pos = super().get_values(xs, ys)
-
-        if self.x_wrap is None and self.y_wrap is None:
-            return pos
-        if self.x_wrap is not None and self.y_wrap is None:
-            x_neg = super().get_values(xs - x_span, ys)
-            return mix(pos, x_neg, xs, x_min, x_span)
-        elif self.y_wrap is not None and self.x_wrap is None:
-            y_neg = super().get_values(xs, ys - y_span)
-            return mix(pos, y_neg, ys, y_min, y_span)
-        else:
-            x_neg = super().get_values(xs - x_span, ys)
-            y_neg = super().get_values(xs, ys - y_span)
-            both_neg = super().get_values(xs - x_span, ys - y_span)
-            return mix(
-                mix(pos, x_neg, xs, x_min, x_span),
-                mix(y_neg, both_neg, xs, x_min, x_span),
-                ys,
-                y_min,
-                y_span
-            )
+import noise_field
 
 
 class WrappedSketch(vsketch.SketchClass):
@@ -92,7 +34,7 @@ class WrappedSketch(vsketch.SketchClass):
         xs = [(random.random()*1.2 - .1) * (max_x - min_x) + min_x for _ in range (num_starts)]
         ys = [(random.random()*1.2 - .1) * (max_y - min_y) + min_y for _ in range (num_starts)]
 
-        field = WrappedNoiseField(
+        field = noise_field.WrappedNoiseField(
             frequency=complex(self.frequency, self.frequency),
             offset=0+0j,
             x_wrap=(0.0, self.width),

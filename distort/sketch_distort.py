@@ -122,18 +122,6 @@ def bounding_circle(geom: gb.BaseGeometry, resolution: int = 16) -> g.Polygon:
     return circle_from_points(welzl(hull_points, []), resolution)
 
 
-def points_within(p: g.Polygon | g.MultiPolygon, density: float) -> g.MultiPoint:
-    """Generate random points within a polygon.
-
-    Args:
-        p: The bounding polygon
-        density: The density of the points
-    """
-    (min_x, min_y, max_x, max_y) = p.bounds
-    count = round(density * (max_x - min_x) * (max_y - min_y))
-    points = g.MultiPoint([(random.uniform(min_x, max_x), random.uniform(min_y, max_y)) for _ in range(count)])
-    return points.intersection(p)
-
 
 def seven_peaks(scale: float) -> g.MultiLineString:
     distance = scale / 6
@@ -198,7 +186,7 @@ class DistortSketch(vsketch.SketchClass):
 
         # bounds = g.Polygon(field.distort(bounding_circle(start_shapes, resolution=64).buffer(self.padding * self.scale).boundary, .1, self.steps))
         # # bounds = a.scale(g.box(*start_shapes.bounds), 1.2, 1.2)
-        # start_points = points_within(bounds.buffer(self.length * self.scale), self.density / self.scale**2)
+        # start_points = util.points_within(bounds.buffer(self.length * self.scale), self.density / self.scale**2)
 
         # lines = field.paths(
         #     [p.x for p in start_points.geoms],
