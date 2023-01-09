@@ -1,5 +1,6 @@
 import pathlib
 import sys
+import math
 
 import shapely.affinity as a
 import shapely.geometry as g
@@ -26,8 +27,41 @@ class PenroseSketch(vsketch.SketchClass):
         vsk.scale(self.scale)
         vsk.centered = False
 
-        [self.draw_tri(tri) for tri in p.kite()]
-        [self.draw_tri(tri.translate(2+0j)) for tri in p.dart()]
+        # right = p.GoldenTriangle(0j, 0, 6, True, join_right=True)
+        # self.draw_tri(right)
+        # vsk.stroke(2)
+        # [self.draw_tri(tri) for tri in right.decompose()]
+
+        # kite = p.kite(size=6)
+        # [self.draw_tri(t) for t in kite]
+        # vsk.stroke(2)
+        # [self.draw_tri(t) for k in kite for t in k.decompose()]
+
+        # t = p.GoldenTriangle(0j, 0, 6, False, join_right=True)
+        # self.draw_tri(t)
+        # vsk.stroke(2)
+        # [self.draw_tri(t) for t in t.decompose()]
+
+        # dart = p.dart(size=6)
+        # [self.draw_tri(t) for t in dart]
+        # vsk.stroke(2)
+        # [self.draw_tri(t) for d in dart for t in d.decompose()]
+
+
+        # kite = p.kite(angle=math.radians(-90), size=6)
+        # [self.draw_tri(t) for t in kite]
+        # vsk.stroke(2)
+        # [self.draw_tri(t) for k in kite for t in k.decompose()]
+        # vsk.stroke(3)
+        # [self.draw_tri(t) for k in kite for t1 in k.decompose() for t in t1.decompose()]
+
+        tiles = p.sun(size=5)
+        [self.draw_tri(t) for t in tiles]
+        vsk.stroke(2)
+        [self.draw_tri(t) for k in tiles for t in k.decompose()]
+        vsk.stroke(3)
+        [self.draw_tri(t) for k in tiles for t1 in k.decompose() for t in t1.decompose()]
+
 
         layout = f"layout --landscape {self.page_size}"
         pen = f"penwidth {self.pen_width_mm}mm color black color -l2 #C00060 color -l3 #0060C0"
