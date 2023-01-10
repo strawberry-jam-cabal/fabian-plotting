@@ -28,7 +28,7 @@ class GoldenTriangle:
         result = []
 
         if self.acute:
-            kite_origin = vertices[1] if self.join_right else vertices[2]
+            kite_origin = vertices[1]
             kite_angle = radians(36) if self.join_right else radians(144)
             result.extend(kite(origin=kite_origin, angle=(self.angle + kite_angle) % (2*pi), size=self.size * factor))
 
@@ -36,14 +36,14 @@ class GoldenTriangle:
             tri_angle = radians(108) if self.join_right else radians(-108)
             result.append(GoldenTriangle(origin=tri_origin, angle=(self.angle + tri_angle) % (2*pi), size=self.size * factor / phi, acute=False, join_right=self.join_right))
         else:
-            a_origin = vertices[1] if self.join_right else vertices[2]
-            a_angle = radians(108) if self.join_right else radians(-108)
+            a_origin = vertices[2]
+            a_angle = radians(-108) if self.join_right else radians(108)
             a = GoldenTriangle(origin=a_origin, angle=(self.angle + a_angle) % (2*pi), size=self.size, acute=True, join_right=not self.join_right)
             result.append(a)
 
             a_vertices = a.points()
-            o_origin = a_vertices[1] if self.join_right else a_vertices[2]
-            o_angle = radians(144) if self.join_right else radians(-144)
+            o_origin = a_vertices[1]
+            o_angle = radians(-144) if self.join_right else radians(144)
             result.append(GoldenTriangle(o_origin, (self.angle + o_angle) % (2*pi), size=self.size * factor, acute=False, join_right=self.join_right))
 
         return result
@@ -51,11 +51,37 @@ class GoldenTriangle:
     def points(self) -> tuple[complex, complex, complex]:
         angle = radians(36) if self.acute else radians(108)
         affine = self.size * complex(cos(self.angle), sin(self.angle))
-        return (
-            self.origin,
+        bottom = [
             complex(sin(angle / 2), cos(angle / 2)) * affine + self.origin,
             complex(-sin(angle / 2), cos(angle / 2)) * affine + self.origin,
-        )
+        ]
+        if not self.join_right:
+            bottom.reverse()
+        return [self.origin] + bottom
+
+    def arcs(self) -> list[tuple[complex, complex, float]]:
+        """Nose arc and tail arc, represented as (origin, radial vector, angle)"""
+        vertices = self.points()
+        direction = 1 if self.join_right else -1
+        if self.acute:
+            nose_center = self.origin
+            tail_center = vertices[2]
+            nose_vector = (tail_center - nose_center) / phi
+            tail_vector = (nose_center - tail_center) + nose_vector
+            nose_angle = direction * radians(-36)
+            tail_angle = direction * radians(72)
+        else:
+            nose_center = vertices[2]
+            nose_vector = (vertices[1] - nose_center) * (1 - 1/phi)
+            nose_angle = direction * radians(-36)
+            tail_center = self.origin
+            nose_end = nose_vector * complex(cos(nose_angle), sin(nose_angle))
+            tail_vector = (nose_center - tail_center) + nose_end
+            tail_angle = direction * radians(-108)
+        return [
+            (nose_center, nose_vector, nose_angle),
+            (tail_center, tail_vector, tail_angle),
+        ]
 
 
 def dart(origin: complex = 0j, angle: float = 0, size: float = 1) -> list[GoldenTriangle]:
