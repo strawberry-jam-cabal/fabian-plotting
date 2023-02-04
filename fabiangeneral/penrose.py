@@ -5,6 +5,17 @@ from math import (sin, cos, radians, sqrt, pi)
 phi = (1 + sqrt(5)) / 2
 
 
+VERTICES = {
+    "ace": p.ace,
+    "duce": p.duce,
+    "star": p.star,
+    "sun": p.sun,
+    "jack": p.jack,
+    "queen": p.queen,
+    "king": p.king,
+}
+
+
 @dataclasses.dataclass(frozen=True, slots=True)
 class GoldenTriangle:
     origin: complex
@@ -105,4 +116,100 @@ def sun(origin: complex = 0j, angle: float = 0, size: float = 1) -> list[GoldenT
         t
         for a in range(0, 360, 72)
         for t in kite(origin=origin, angle=angle + radians(a), size=size)
+    ]
+
+
+def star(origin: complex = 0j, angle: float = 0, size: float = 1) -> list[GoldenTriangle]:
+    offset = complex(size / phi, 0) * complex(cos(angle), sin(angle))
+    step = complex(cos(radians(72)), sin(radians(72)))
+    return [
+        t
+        for i in range(5)
+        for t in dart(origin=origin + (offset * step**i), angle=angle + radians(72*i), size=size)
+    ]
+
+
+def ace(origin: complex = 0j, angle: float = 0, size: float = 1) -> list[GoldenTriangle]:
+    rotation = complex(cos(angle), sin(angle))
+    to_kites = complex(0, size) * rotation
+    tiles = [
+        dart(origin=origin, angle=angle + radians(90), size=size),
+        kite(origin=origin + to_kites, angle=angle + radians(54), size=size),
+        kite(origin=origin + to_kites, angle=angle + radians(126), size=size),
+    ]
+    return [
+        tri
+        for t in tiles
+        for tri in t
+    ]
+
+
+def duce(origin: complex = 0j, angle: float = 0, size: float = 1) -> list[GoldenTriangle]:
+    def rotation(a): return complex(cos(a), sin(a))
+    to_kite = complex(0, -size) * rotation(angle)
+    to_dart = complex(0, -size / phi) * rotation(angle)
+    tiles = [
+        dart(origin=origin + to_dart * rotation(radians(-36)), angle=angle + radians(90+36), size=size),
+        dart(origin=origin + to_dart * rotation(radians(36)), angle=angle + radians(90-36), size=size),
+        kite(origin=origin + to_kite * rotation(radians(-108)), angle=angle + radians(162), size=size),
+        kite(origin=origin + to_kite * rotation(radians(108)), angle=angle + radians(18), size=size),
+    ]
+    return [
+        tri
+        for t in tiles
+        for tri in t
+    ]
+
+
+def king(origin: complex = 0j, angle: float = 0, size: float = 1) -> list[GoldenTriangle]:
+    def rotation(a): return complex(cos(a), sin(a))
+    to_kite = complex(0, -size) * rotation(angle)
+    to_dart = complex(0, -size / phi) * rotation(angle)
+    tiles = [
+        dart(origin=origin + to_dart * rotation(radians(0)), angle=angle + radians(-90), size=size),
+        dart(origin=origin + to_dart * rotation(radians(-72)), angle=angle + radians(-162), size=size),
+        dart(origin=origin + to_dart * rotation(radians(72)), angle=angle + radians(-18), size=size),
+        kite(origin=origin + to_kite * rotation(radians(-108)), angle=angle + radians(-162), size=size),
+        kite(origin=origin + to_kite * rotation(radians(108)), angle=angle + radians(-18), size=size),
+    ]
+    return [
+        tri
+        for t in tiles
+        for tri in t
+    ]
+
+
+def queen(origin: complex = 0j, angle: float = 0, size: float = 1) -> list[GoldenTriangle]:
+    def rotation(a): return complex(cos(a), sin(a))
+    to_kite = complex(0, -size) * rotation(angle)
+    to_dart = complex(0, -size / phi) * rotation(angle)
+    tiles = [
+        dart(origin=origin + to_dart * rotation(radians(0)), angle=angle + radians(-90), size=size),
+        kite(origin=origin + to_kite * rotation(radians(-36)), angle=angle + radians(-90), size=size),
+        kite(origin=origin + to_kite * rotation(radians(36)), angle=angle + radians(-90), size=size),
+        kite(origin=origin + to_kite * rotation(radians(180)), angle=angle + radians(54), size=size),
+        kite(origin=origin + to_kite * rotation(radians(180)), angle=angle + radians(126), size=size),
+    ]
+    return [
+        tri
+        for t in tiles
+        for tri in t
+    ]
+
+
+def jack(origin: complex = 0j, angle: float = 0, size: float = 1) -> list[GoldenTriangle]:
+    def rotation(a): return complex(cos(a), sin(a))
+    to_kite = complex(0, -size) * rotation(angle)
+    to_dart = complex(0, -size / phi) * rotation(angle)
+    tiles = [
+        kite(origin=origin + to_kite, angle=angle + radians(-90), size=size),
+        dart(origin=origin + to_dart * rotation(radians(-72)), angle=angle + radians(-54), size=size),
+        dart(origin=origin + to_dart * rotation(radians(72)), angle=angle + radians(-126), size=size),
+        kite(origin=origin, angle=angle + radians(-54), size=size),
+        kite(origin=origin, angle=angle + radians(-126), size=size),
+    ]
+    return [
+        tri
+        for t in tiles
+        for tri in t
     ]
