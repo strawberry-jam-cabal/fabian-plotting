@@ -1,22 +1,12 @@
 import dataclasses
 from math import (sin, cos, radians, sqrt, pi)
+from typing import Callable
 
 
 phi = (1 + sqrt(5)) / 2
 
 
-VERTICES = {
-    "ace": p.ace,
-    "duce": p.duce,
-    "star": p.star,
-    "sun": p.sun,
-    "jack": p.jack,
-    "queen": p.queen,
-    "king": p.king,
-}
-
-
-@dataclasses.dataclass(frozen=True, slots=True)
+@dataclasses.dataclass(frozen=True, slots=True)  # type: ignore
 class GoldenTriangle:
     origin: complex
     angle: float
@@ -59,7 +49,7 @@ class GoldenTriangle:
 
         return result
 
-    def points(self) -> tuple[complex, complex, complex]:
+    def points(self) -> list[complex]:
         angle = radians(36) if self.acute else radians(108)
         affine = self.size * complex(cos(self.angle), sin(self.angle))
         bottom = [
@@ -213,3 +203,14 @@ def jack(origin: complex = 0j, angle: float = 0, size: float = 1) -> list[Golden
         for t in tiles
         for tri in t
     ]
+
+
+VERTICES: dict[str, Callable[[complex, float, float], list[GoldenTriangle]]] = {
+    "ace": ace,
+    "duce": duce,
+    "star": star,
+    "sun": sun,
+    "jack": jack,
+    "queen": queen,
+    "king": king,
+}

@@ -1,0 +1,16 @@
+{
+    "page_size": "4.5inx6.25in",
+    "scale": 1.0,
+    "pen_width_mm": 0.45,
+    "vertex": "ace",
+    "size": 5,
+    "angle": 0,
+    "iterations": 2,
+    "spacing": 0.12,
+    "density": 4.0,
+    "fuel": 3.2,
+    "min_length": 0.0,
+    "frequency": 0.35,
+    "detail": 0.25,
+    "__seed__": 878335870
+}
