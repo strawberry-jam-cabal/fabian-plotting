@@ -1,3 +1,4 @@
+import datetime
 from textwrap import dedent
 
 # distances / mmm
@@ -15,7 +16,11 @@ z_travel = 500
 z_cut = 210
 
 
-tool_change_layers = [] # which layers need a tool change
+tool_change_layers = [1] # which layers need a tool change
+
+
+pos = 0j
+time_m = z_retract / z_travel
 
 
 document_start = f""";Generated with vpype gwrite fabian
@@ -42,6 +47,11 @@ def layer_join(layer_index, **kwargs):
     return f";{note}\n\n"
 
 def segment_first(x, y, layer_index, lines_index, **kwargs):
+    global pos, time_m
+    new_pos = complex(x, y)
+    time_m += abs(pos - new_pos) / xy_travel
+    time_m += (z_retract - z_engaged) / z_cut
+    pos = new_pos
     return dedent(f"""\
         ;Begin Line: layer={layer_index} line={lines_index}
         G0   X{x:{fmt}}   Y{y:{fmt}}   Z{z_retract:{fmt}}   F{xy_travel}
@@ -50,15 +60,28 @@ def segment_first(x, y, layer_index, lines_index, **kwargs):
     )
 
 def segment(x, y, **kwargs):
+    global pos, time_m
+    new_pos = complex(x, y)
+    time_m += abs(pos - new_pos) / xy_cut
+    pos = new_pos
     return f"G0   X{x:{fmt}}   Y{y:{fmt}}   Z{z_engaged:{fmt}}   F{xy_cut}\n"
 
 def line_end(x, y, **kwargs):
+    global time_m
+    time_m += (z_retract - z_engaged) / z_travel
     return f"G0   X{x:{fmt}}   Y{y:{fmt}}   Z{z_retract:{fmt}}   F{z_travel}\n\n"
 
-document_end = f"""
-G0   X000.0000   Y000.0000   Z{z_retract:{fmt}}   F{xy_travel}
-G0   X000.0000   Y000.0000   Z{z_final:{fmt}}   F{z_travel}
-"""
+def document_end(**kwargs):
+    duration = datetime.timedelta(minutes=round(time_m))
+    message = f"Estimated time: {duration}"
+    print(message)
+    return dedent(
+        f"""
+        G0   X000.0000   Y000.0000   Z{z_retract:{fmt}}   F{xy_travel}
+        G0   X000.0000   Y000.0000   Z{z_final:{fmt}}   F{z_travel}
+        ;{message}
+        """
+    )
 
 unit = "mm"
 
